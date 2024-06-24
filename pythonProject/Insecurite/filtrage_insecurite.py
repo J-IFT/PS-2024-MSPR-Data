@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 
+# Ce script a pour but de filtrer notre jeu de données avant de faire notre dictionnaire de données
+
 # Charger le jeu de données
 df = pd.read_csv('C:/Users/julie/OneDrive - Ifag Paris/Documents/MSPR/3/donnee-data.gouv-2023-geographie2023-produit-le2024-03-07.csv', delimiter=';')
 
