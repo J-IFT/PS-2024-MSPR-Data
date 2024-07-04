@@ -8,12 +8,11 @@ Groupe : Juliette, Flavien, Yasmine & Colas
 
 ### 📌 Consignes du projet : 
 
-CERTIFICATION PROFESSIONNELLE EXPERT EN INFORMATIQUE ET SYSTEME D’INFORMATION
+CERTIFICATION PROFESSIONNELLE EXPERT EN INFORMATIQUE ET SYSTEME D’INFORMATION RNCP - RNCP N°35584
 
-BLOC 4 – Concevoir et développer des solutions applicatives métier et spécifiques (mobiles, embarquées et ERP)
+BLOC E7.3 – Piloter l’informatique décisionnel d’un S.I (Big Data & Business Intelligence)
 
-Cahier des Charges de la MSPR « Conception d’une solution applicative en adéquation avec l’environnement technique étudié
-
+Cahier des Charges de la MSPR « Big Data et Analyse de données »
 
 ### 🐱 Notre projet :
 
