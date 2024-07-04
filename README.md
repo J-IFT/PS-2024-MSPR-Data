@@ -8,7 +8,11 @@ Groupe : Juliette, Flavien, Yasmine & Colas
 
 ### 📌 Consignes du projet : 
 
-(à remplir)
+CERTIFICATION PROFESSIONNELLE EXPERT EN INFORMATIQUE ET SYSTEME D’INFORMATION
+
+BLOC 4 – Concevoir et développer des solutions applicatives métier et spécifiques (mobiles, embarquées et ERP)
+
+Cahier des Charges de la MSPR « Conception d’une solution applicative en adéquation avec l’environnement technique étudié
 
 
 ### 🐱 Notre projet :
@@ -18,7 +22,12 @@ Groupe : Juliette, Flavien, Yasmine & Colas
 
 ### 💻 Applications et langages utilisés :
 
-(à remplir)
+- Visual studio code
+
+- KNIME
+
+- PowerBI
+
 
 
 ## 🌸 Merci !
