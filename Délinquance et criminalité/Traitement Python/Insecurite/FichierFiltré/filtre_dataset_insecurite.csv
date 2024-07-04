@@ -1,0 +1,33 @@
+Type de crime;Annee;Unite;Nombre de faits;Population (milliers);Nombre de logements (milliers);Taux pour mille
+Homicides;17;victime;7;17.0;17.0;1,61575872567418e-02
+Homicides;22;victime;5;21.0;20.0;1,15934770460748e-02
+Coups et blessures volontaires;17;victime;1261;17.0;17.0;2,91067393296448e+00
+Coups et blessures volontaires;22;victime;2021;21.0;20.0;4,68608342202343e+00
+Coups et blessures volontaires intrafamiliaux;17;victime;598;17.0;17.0;1,38031959707594e+00
+Coups et blessures volontaires intrafamiliaux;22;victime;1184;21.0;20.0;2,74533536451051e+00
+Autres coups et blessures volontaires;17;victime;663;17.0;17.0;1,53035433588854e+00
+Autres coups et blessures volontaires;22;victime;837;21.0;20.0;1,94074805751292e+00
+Violences sexuelles;17;victime;244;17.0;17.0;5,63207327234998e-01
+Violences sexuelles;22;victime;630;21.0;20.0;1,46077810780542e+00
+Vols avec armes;17;infraction;28;17.0;17.0;6,46303490269670e-02
+Vols avec armes;22;infraction;16;21.0;20.0;3,70991265474393e-02
+Vols violents sans arme;17;infraction;173;17.0;17.0;3,99323227916618e-01
+Vols violents sans arme;22;infraction;119;21.0;20.0;2,75924753696580e-01
+Vols sans violence contre des personnes;17;victime entendue;2059;17.0;17.0;4,75263888023304e+00
+Vols sans violence contre des personnes;22;victime entendue;1881;21.0;20.0;4,36146606473334e+00
+Cambriolages de logement;17;infraction;1246;17.0;17.0;5,78593026643131e+00
+Cambriolages de logement;22;infraction;820;21.0;20.0;3,75401430147558e+00
+Vols de véhicules;17;véhicule;638;17.0;17.0;1,47264866711446e+00
+Vols de véhicules;22;véhicule;507;21.0;20.0;1,17557857247198e+00
+Vols dans les véhicules;17;véhicule;751;17.0;17.0;1,73347828997329e+00
+Vols dans les véhicules;22;véhicule;615;21.0;20.0;1,42599767666720e+00
+Vols d'accessoires sur véhicules;17;véhicule;535;17.0;17.0;1,23490131176526e+00
+Vols d'accessoires sur véhicules;22;véhicule;597;21.0;20.0;1,38426115930133e+00
+Destructions et dégradations volontaires;17;infraction;3291;17.0;17.0;7,59637423741959e+00
+Destructions et dégradations volontaires;22;infraction;3193;21.0;20.0;7,40359444162336e+00
+Escroqueries;17;victime;1845;17.0;17.0;4,25867835552693e+00
+Escroqueries;22;victime;2175;21.0;20.0;5,04316251504254e+00
+Trafic de stupéfiants;17;Mis en cause;264;17.0;17.0;6,09371862254260e-01
+Trafic de stupéfiants;22;Mis en cause;211;21.0;20.0;4,89244731344356e-01
+Usage de stupéfiants;17;Mis en cause;1116;17.0;17.0;2,57598105407483e+00
+Usage de stupéfiants;22;Mis en cause;1048;21.0;20.0;2,42999278885728e+00
