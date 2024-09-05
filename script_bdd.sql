@@ -1,10 +1,8 @@
--- Table des Partis
 CREATE TABLE parti (
     id_parti INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(255) NOT NULL
 );
 
--- Table des Elections
 CREATE TABLE election (
     id_election INT AUTO_INCREMENT PRIMARY KEY,
     annee INT NOT NULL,
@@ -21,8 +19,6 @@ CREATE TABLE pays (
     libelle_pays VARCHAR(250)
 );
 
-
--- Table des Communes
 CREATE TABLE commune (
     code_postal INT PRIMARY KEY,
     libelle_commune VARCHAR(255) NOT NULL,
@@ -32,7 +28,6 @@ CREATE TABLE commune (
     FOREIGN KEY (id_pays) REFERENCES pays(id_pays)
 );
 
--- Table des Résultats
 CREATE TABLE resultat (
     id_resultat INT AUTO_INCREMENT PRIMARY KEY,
     id_parti INT,
@@ -44,14 +39,12 @@ CREATE TABLE resultat (
     FOREIGN KEY (code_postal) REFERENCES commune(code_postal)
 );
 
--- Table des Elections futures
 CREATE TABLE election_future (
     id_election_future INT AUTO_INCREMENT PRIMARY KEY,
     annee INT NOT NULL,
     type ENUM('1er tour', '2e tour') NOT NULL
 );
 
--- Table des Prédictions
 CREATE TABLE prediction (
     id_prediction INT AUTO_INCREMENT PRIMARY KEY,
     id_parti INT,
@@ -64,7 +57,6 @@ CREATE TABLE prediction (
     FOREIGN KEY (code_postal) REFERENCES commune(code_postal)
 );
 
--- Table des données démographiques générales
 CREATE TABLE population(
     id_population INT AUTO_INCREMENT PRIMARY KEY,
     code_postal INT,
@@ -74,32 +66,29 @@ CREATE TABLE population(
     FOREIGN KEY (code_postal) REFERENCES commune(code_postal)
 );
 
--- Table des Diplômes
 CREATE TABLE diplome (
     id_diplome INT AUTO_INCREMENT PRIMARY KEY,
     niveau VARCHAR(255)
 );
 
--- Table des niveaux d'éducation
 CREATE TABLE education (
     id_education INT AUTO_INCREMENT PRIMARY KEY,
     annee INT,
     code_postal INT,
     id_diplome INT,
-    nombre_total INT,
-    nombre_hommes INT,
-    nombre_femmes INT,
+    id_genre INT,
+    nombre_personnes INT
     FOREIGN KEY (id_diplome) REFERENCES diplome(id_diplome),
+    FOREIGN KEY (id_genre) REFERENCES genre(id_genre),
     FOREIGN KEY (code_postal) REFERENCES commune(code_postal)
 );
 
--- Table des Âges
+
 CREATE TABLE tranche_age (
     id_tranche_age INT PRIMARY KEY AUTO_INCREMENT,
-    tranche_age VARCHAR(50) -- Ex : '18-25', '26-35', etc.
+    tranche_age VARCHAR(50) 
 );
 
--- Table des Genres
 CREATE TABLE genre (
     id_genre INT AUTO_INCREMENT PRIMARY KEY,
     genre VARCHAR(255)
@@ -107,35 +96,49 @@ CREATE TABLE genre (
 
 CREATE TABLE categorie_socio_pro (
     id_CSP INT PRIMARY KEY AUTO_INCREMENT,
-    nom_CSP VARCHAR(255) -- Ex : 'Agriculteurs', 'Cadres', etc.
+    nom_CSP VARCHAR(255) 
 );
 
-CREATE TABLE population_par_âge (
+CREATE TABLE population_par_age_et_genre (
     id_population_age INT PRIMARY KEY AUTO_INCREMENT,
-    code_postal INT, -- Clé étrangère vers la table Commune
-    annee INT, -- Année des données
-    id_tranche_age INT, -- Clé étrangère vers la table TrancheAge
-    nb_personnes INT, -- Nombre total de personnes dans cette tranche d'âge
+    code_postal INT,
+    annee INT, 
+    id_tranche_age INT, 
+    id_genre INT,
+    nb_personnes INT, 
     FOREIGN KEY (code_postal) REFERENCES commune(code_postal),
-    FOREIGN KEY (id_tranche_age) REFERENCES tranche_age(id_tranche_age)
+    FOREIGN KEY (id_tranche_age) REFERENCES tranche_age(id_tranche_age),
+    FOREIGN KEY (id_genre) REFERENCES genre(id_genre)
 );
 
 CREATE TABLE population_par_CSP (
     id_population_csp INT PRIMARY KEY AUTO_INCREMENT,
-    code_postal INT, -- Clé étrangère vers la table Commune
-    annee INT, -- Année des données
-    id_CSP INT, -- Clé étrangère vers la table CategorieSocioPro
-    nb_personnes INT, -- Nombre total de personnes dans cette catégorie
+    code_postal INT, 
+    annee INT, 
+    id_CSP INT, 
+    nb_personnes INT, 
     FOREIGN KEY (code_postal) REFERENCES commune(code_postal),
     FOREIGN KEY (id_CSP) REFERENCES categorie_socio_pro(id_CSP)
 );
 
--- Table de la Délinquance et Criminalité
+CREATE TABLE population_au_chomage_par_genre_et_age (
+    id_population_chomage INT PRIMARY KEY AUTO_INCREMENT,
+    code_postal INT, 
+    annee INT, 
+    id_genre INT, 
+    id_tranche_age INT,
+    nb_personnes INT, 
+    FOREIGN KEY (id_tranche_age) REFERENCES tranche_age(id_tranche_age),
+    FOREIGN KEY (id_genre) REFERENCES genre(id_genre)
+);
+
 CREATE TABLE delinquance_criminalite (
     id_delinquance_criminalite INT AUTO_INCREMENT PRIMARY KEY,
     id_departement INT,
     annee INT,
+    taux_cambriolages FLOAT,
     taux_homicides FLOAT,
+    taux_coups_blessures_volontaires FLOAT,
     taux_coups_blessures_volontaires_intrafamiliaux FLOAT,
     taux_autres_coups_blessures FLOAT,
     taux_violences_sexuelles FLOAT,
@@ -152,7 +155,6 @@ CREATE TABLE delinquance_criminalite (
     FOREIGN KEY (id_departement) REFERENCES departement(id_departement)
 );
 
--- Table des Sentiments d'Insécurité et Indice de Confiance des Ménages
 CREATE TABLE sentiment_insecurite (
     id_sentiment_insecurite INT AUTO_INCREMENT PRIMARY KEY,
     id_pays INT,
@@ -165,11 +167,11 @@ CREATE TABLE sentiment_insecurite (
     FOREIGN KEY (id_genre) REFERENCES genre(id_genre)
 );
 
--- Table de l'Indice de Confiance des Ménages
 CREATE TABLE indicateur_confiance_menage (
     id_indicateur_confiance_menage INT AUTO_INCREMENT PRIMARY KEY,
     id_pays INT,
     annee INT,
+    indicateur_synthetique FLOAT,
     indicateur_niveau_de_vie_passe FLOAT,
     indicateur_niveau_de_vie_evolution FLOAT,
     indicateur_chomage_evolution FLOAT,
