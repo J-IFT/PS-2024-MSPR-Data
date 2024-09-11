@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 05, 2024 at 05:40 PM
+-- Generation Time: Sep 11, 2024 at 01:59 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.1.0
 
@@ -23185,7 +23185,7 @@ INSERT INTO `population_par_csp` (`id_population_csp`, `code_postal`, `annee`, `
 CREATE TABLE `prediction` (
   `id_prediction` int(11) NOT NULL,
   `id_parti` int(11) DEFAULT NULL,
-  `id_election` int(11) DEFAULT NULL,
+  `id_election_future` int(11) DEFAULT NULL,
   `code_postal` int(11) DEFAULT NULL,
   `votes_prevus` int(11) DEFAULT NULL,
   `taux_precision` float DEFAULT NULL
@@ -27734,8 +27734,8 @@ ALTER TABLE `population_par_csp`
 ALTER TABLE `prediction`
   ADD PRIMARY KEY (`id_prediction`),
   ADD KEY `id_parti` (`id_parti`),
-  ADD KEY `id_election` (`id_election`),
-  ADD KEY `code_postal` (`code_postal`);
+  ADD KEY `code_postal` (`code_postal`),
+  ADD KEY `id_election_future` (`id_election_future`) USING BTREE;
 
 --
 -- Indexes for table `resultat`
@@ -27769,7 +27769,7 @@ ALTER TABLE `tranche_age`
 -- AUTO_INCREMENT for table `categorie_socio_pro`
 --
 ALTER TABLE `categorie_socio_pro`
-  MODIFY `id_CSP` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_CSP` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `delinquance_criminalite`
@@ -27847,7 +27847,7 @@ ALTER TABLE `population_au_chomage_par_genre_et_age`
 -- AUTO_INCREMENT for table `population_par_age_et_genre`
 --
 ALTER TABLE `population_par_age_et_genre`
-  MODIFY `id_population_age` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9446;
+  MODIFY `id_population_age` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4953;
 
 --
 -- AUTO_INCREMENT for table `population_par_csp`
@@ -27942,7 +27942,7 @@ ALTER TABLE `population_par_csp`
 --
 ALTER TABLE `prediction`
   ADD CONSTRAINT `prediction_ibfk_1` FOREIGN KEY (`id_parti`) REFERENCES `parti` (`id_parti`),
-  ADD CONSTRAINT `prediction_ibfk_2` FOREIGN KEY (`id_election`) REFERENCES `election` (`id_election`),
+  ADD CONSTRAINT `prediction_ibfk_2` FOREIGN KEY (`id_election_future`) REFERENCES `election_future` (`id_election_future`),
   ADD CONSTRAINT `prediction_ibfk_3` FOREIGN KEY (`code_postal`) REFERENCES `commune` (`code_postal`);
 
 --
