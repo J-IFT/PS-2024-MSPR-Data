@@ -53,7 +53,7 @@ CREATE TABLE prediction (
     votes_prevus INT,
     taux_precision FLOAT,
     FOREIGN KEY (id_parti) REFERENCES parti(id_parti),
-    FOREIGN KEY (id_election) REFERENCES election(id_election),
+    FOREIGN KEY (id_election) REFERENCES election_future(id_election_future),
     FOREIGN KEY (code_postal) REFERENCES commune(code_postal)
 );
 
