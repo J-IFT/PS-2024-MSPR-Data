@@ -10,36 +10,24 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_selection import RFE
 import seaborn as sns
+from sklearn.preprocessing import OneHotEncoder
 
-# Chargement des données
-# Variable cible
-resultats = pd.read_excel("data/resultats_electoraux.xlsx")
-# Variables explicatives
-chomage = pd.read_excel("data/chomage_par_genre_et_age.xlsx")
-csp = pd.read_excel("data/population_par_CSP.xlsx")
-education = pd.read_excel("data/niveau_diplome_par_genre.xlsx")
-insecurite = pd.read_excel("data/sentiment_insecurite.xlsx")
-confiance = pd.read_excel("data/confiance_des_menages.xlsx")
 
 # Préparer les données
 def prepare_data():
-    data = pd.merge(resultats, chomage, on=['libelle_commune', 'annee'], how='left')
-    data = pd.merge(data, csp, on=['libelle_commune', 'annee'], how='left')
-    data = pd.merge(data, education, on=['libelle_commune', 'annee'], how='left')
-    data = pd.merge(data, insecurite, on='annee', how='left')
-    data = pd.merge(data, confiance, on='annee', how='left')
-
+    data = pd.read_excel("data/fichier_final.xlsx", decimal=',')
+    
     feature_columns = [
-        'total_voix_1er_tour', 'total_voix_2e_tour',
+        'resultat_premier_tour_encoded', # Variable cible
         'total_au_chomage', 'hommes_au_chomage', 'femmes_au_chomage',
         'Agriculteurs exploitants', 'Artisans_commerçants_chefs_d_entreprise', 'Cadre_et_profession_intellectuelle_supérieure', 'Profession_intermédiaire', 'Employe', 'Ouvrier',
         'DIPLMIN_total', 'BEPC_total', 'CAPBEP_total', 'BAC_total',
         'SUP2_total', 'SUP34_total', 'SUP5_total',
         'sentiment_insecurite_14_29', 'sentiment_insecurite_30_44',
-        'sentiment_insecurite_45_59', 'sentiment_insecurite_60_74',
-        'sentiment_insecurite_75_plus', 'indicateur_synthetique',
+        'sentiment_insecurite_45_59', 'sentiment_insecurite_60_74', 'indicateur_synthetique',
         'indicateur_niveau_de_vie_passe', 'indicateur_niveau_de_vie_evolution',
         'indicateur_chomage_evolution', 'sentiment_insecurite_total'
     ]
@@ -61,29 +49,39 @@ data = prepare_data()
 
 correlation_matrix = data.corr()
 
-# Sélectionner la corrélation avec la variable cible 'total_voix_1er_tour'
-correlation_with_target = correlation_matrix['total_voix_1er_tour'].drop(['total_voix_1er_tour', 'total_voix_2e_tour'])
+# Sélectionner la corrélation avec la variable cible 'resultat_premier_tour_encoded'
+correlation_with_target = correlation_matrix.filter(like='resultat_premier_tour').iloc[:, 0]
 
 # Trier les corrélations par ordre décroissant
 correlation_sorted = correlation_with_target.sort_values(ascending=False)
 
-# Trier les corrélations par ordre décroissant
-correlation_sorted = correlation_with_target.sort_values(ascending=False)
+
+#----------------------------------------------------------------------------
+
+# Afficher les indices de corrélation
+print("Corrélation des variables explicatives avec les résultats du premier tour:")
+print(correlation_sorted)
+
+# Afficher une heatmap pour la visualisation
+plt.figure(figsize=(12, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+plt.title('Matrice de Corrélation')
+plt.show()
 
 #----------------------------------------------------------------------------------------------
 # Afficher les indices de corrélation
-# print("Corrélation des variables explicatives avec 'total_voix_1er_tour':")
-# print(correlation_sorted)
+print("Corrélation des variables explicatives avec 'resultat_premier_tour':")
+print(correlation_sorted)
 
 #----------------------------------------------------------------------------------------------
 # Création d'une heatmap
-# plt.figure(figsize=(6, 4))
-# correlation_sorted.plot(kind='barh')
-# plt.title('Corrélation des variables explicatives avec total_voix_1er_tour')
-# plt.xlabel('Corrélation')
-# plt.ylabel('Variables')
-# plt.subplots_adjust(left=0.3)
-# plt.show()
+plt.figure(figsize=(6, 4))
+correlation_sorted.plot(kind='barh')
+plt.title('Corrélation des variables explicatives avec les résultats du premier tour')
+plt.xlabel('Corrélation')
+plt.ylabel('Variables')
+plt.subplots_adjust(left=0.3)
+plt.show()
 
 #----------------------------------------------------------------------------------------------
 # Visualiser la matrice de corrélation avec une carte de chaleur
@@ -95,18 +93,18 @@ correlation_sorted = correlation_with_target.sort_values(ascending=False)
 # plt.subplots_adjust(bottom=0.4)
 # plt.show()
 
-
+#----------------------------------------------------------------------------------------------
 # Séparation des données en caractéristiques (X) et cible (y)
-X = data.drop(columns=['total_voix_1er_tour', 'total_voix_2e_tour'])
-y = data['total_voix_1er_tour']
+# X = data.drop(columns=['resultat_premier_tour'])
+# y = data['resultat_premier_tour']
 
 
-# # Standardisation des données
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# # # Standardisation des données
+# scaler = StandardScaler()
+# X_scaled = scaler.fit_transform(X)
 
-# # Séparation des données en ensembles d'entraînement et de test
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+# # # Séparation des données en ensembles d'entraînement et de test
+# X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
 #----------------------------------------------------------------------------------------------
 # Entraînement du modèle Ridge
@@ -163,7 +161,7 @@ coefficients = pd.DataFrame({'Variable': X.columns, 'Coefficient': lasso_model.c
 # selected_features = coefficients[abs(coefficients['Coefficient']) > threshold]['Variable'].tolist()
 
 #Sans seuil
-selected_features = coefficients[coefficients['Coefficient'] != 0]
+# selected_features = coefficients[coefficients['Coefficient'] != 0]
 
 # print("Variables sélectionnées par le modèle Lasso :")
 # print(selected_features)
@@ -192,46 +190,46 @@ selected_features = coefficients[coefficients['Coefficient'] != 0]
 #----------------------------------------------------------------------------------------------
 #Mise en place du modèle final avec les variables les plus pertinentes
 # Filtrer les données pour ne conserver que les variables sélectionnées
-X_selected = X[selected_features]
+# X_selected = X[selected_features]
 
-# Standardisation des données sélectionnées
-scaler_selected = StandardScaler()
-X_selected_scaled = scaler_selected.fit_transform(X_selected)
+# # Standardisation des données sélectionnées
+# scaler_selected = StandardScaler()
+# X_selected_scaled = scaler_selected.fit_transform(X_selected)
 
-# Séparation des données sélectionnées en ensembles d'entraînement et de test
-X_train_selected, X_test_selected, y_train_selected, y_test_selected = train_test_split(X_selected_scaled, y, test_size=0.2, random_state=42)
+# # Séparation des données sélectionnées en ensembles d'entraînement et de test
+# X_train_selected, X_test_selected, y_train_selected, y_test_selected = train_test_split(X_selected_scaled, y, test_size=0.2, random_state=42)
 
 #-------------
 # Entraînement du modèle final 
-def evaluate_model(model, X_train, X_test, y_train, y_test, model_name):
-    # Entraînement du modèle
-    model.fit(X_train, y_train)
+# def evaluate_model(model, X_train, X_test, y_train, y_test, model_name):
+#     # Entraînement du modèle
+#     model.fit(X_train, y_train)
     
-    # Prédictions avec le modèle
-    y_pred = model.predict(X_test)
+#     # Prédictions avec le modèle
+#     y_pred = model.predict(X_test)
     
-    # Évaluation du modèle
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
+#     # Évaluation du modèle
+#     mse = mean_squared_error(y_test, y_pred)
+#     r2 = r2_score(y_test, y_pred)
     
-    print(f"{model_name} - Mean Squared Error: {mse}")
-    print(f"{model_name} - R² Score: {r2}")
+#     print(f"{model_name} - Mean Squared Error: {mse}")
+#     print(f"{model_name} - R² Score: {r2}")
 
-# Exemple avec le modèle Ridge
-final_model_ridge = Ridge(alpha=1.0)
-evaluate_model(final_model_ridge, X_train_selected, X_test_selected, y_train_selected, y_test_selected, "Ridge Regression")
+# # Exemple avec le modèle Ridge
+# final_model_ridge = Ridge(alpha=1.0)
+# evaluate_model(final_model_ridge, X_train_selected, X_test_selected, y_train_selected, y_test_selected, "Ridge Regression")
 
-# Exemple avec le modèle Lasso
-model_lasso = Lasso(alpha=1.0)
-evaluate_model(model_lasso, X_train_selected, X_test_selected, y_train_selected, y_test_selected, "Lasso Regression")
+# # Exemple avec le modèle Lasso
+# model_lasso = Lasso(alpha=1.0)
+# evaluate_model(model_lasso, X_train_selected, X_test_selected, y_train_selected, y_test_selected, "Lasso Regression")
 
-# Exemple avec le modèle Forêts Aléatoires
-model_rf = RandomForestRegressor(n_estimators=100, random_state=42)
-evaluate_model(model_rf, X_train_selected, X_test_selected, y_train_selected, y_test_selected, "Random Forest")
+# # Exemple avec le modèle Forêts Aléatoires
+# model_rf = RandomForestRegressor(n_estimators=100, random_state=42)
+# evaluate_model(model_rf, X_train_selected, X_test_selected, y_train_selected, y_test_selected, "Random Forest")
 
-# Exemple avec le modèle Gradient Boosting
-model_gb = GradientBoostingRegressor(n_estimators=100, random_state=42)
-evaluate_model(model_gb, X_train_selected, X_test_selected, y_train_selected, y_test_selected, "Gradient Boosting")
+# # Exemple avec le modèle Gradient Boosting
+# model_gb = GradientBoostingRegressor(n_estimators=100, random_state=42)
+# evaluate_model(model_gb, X_train_selected, X_test_selected, y_train_selected, y_test_selected, "Gradient Boosting")
 
 #----------------------------------------------------------------------------------------------
 # Validation croisée pour confirmer la performance du modèle
