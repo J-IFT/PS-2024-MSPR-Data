@@ -125,5 +125,29 @@ JOIN pays ON indicateur_confiance_menage.id_pays = pays.id_pays
 """
 execute_query_to_excel(query_confiance, "confiance_des_menages.xlsx")
 
+# Requête 6 : population par âge et genre
+query_population_genre_age = """
+SELECT 
+    commune.libelle_commune,
+    population_par_age_et_genre.annee AS annee,
+    
+    -- Groupe hommes et femmes
+    SUM(CASE WHEN genre.genre = 'Homme' THEN population_par_age_et_genre.nb_personnes ELSE 0 END) AS total_hommes,
+    SUM(CASE WHEN genre.genre = 'Femme' THEN population_par_age_et_genre.nb_personnes ELSE 0 END) AS total_femmes,
+    
+    -- Groupe par génération (tous genres confondus)
+    SUM(CASE WHEN tranche_age.tranche_age = '15-24' THEN population_par_age_et_genre.nb_personnes ELSE 0 END) AS generation_15_24,
+    SUM(CASE WHEN tranche_age.tranche_age = '25-54' THEN population_par_age_et_genre.nb_personnes ELSE 0 END) AS generation_25_54,
+    SUM(CASE WHEN tranche_age.tranche_age = '55-64' THEN population_par_age_et_genre.nb_personnes ELSE 0 END) AS generation_55_64
+
+FROM population_par_age_et_genre
+JOIN commune ON population_par_age_et_genre.code_postal = commune.code_postal
+JOIN genre ON population_par_age_et_genre.id_genre = genre.id_genre
+JOIN tranche_age ON population_par_age_et_genre.id_tranche_age = tranche_age.id_tranche_age
+GROUP BY commune.libelle_commune, annee;
+
+"""
+execute_query_to_excel(query_population_genre_age, "population_par_age_genre.xlsx")
+
 # Fermeture de la connexion
 engine.dispose()
