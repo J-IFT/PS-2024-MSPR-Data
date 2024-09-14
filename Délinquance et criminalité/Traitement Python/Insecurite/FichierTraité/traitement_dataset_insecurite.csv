@@ -1,0 +1,33 @@
+Type de crime;Annee;Unite;Nombre de faits;Population (milliers);Nombre de logements (milliers);Taux pour mille
+Homicides;2017;victime;7;17;17;411,8
+Homicides;2022;victime;5;21;20;238,1
+Coups et blessures volontaires;2017;victime;1261;17;17;74176,5
+Coups et blessures volontaires;2022;victime;2021;21;20;96238,1
+Coups et blessures volontaires intrafamiliaux;2017;victime;598;17;17;35176,5
+Coups et blessures volontaires intrafamiliaux;2022;victime;1184;21;20;56381,0
+Autres coups et blessures volontaires;2017;victime;663;17;17;39000,0
+Autres coups et blessures volontaires;2022;victime;837;21;20;39857,1
+Violences sexuelles;2017;victime;244;17;17;14352,9
+Violences sexuelles;2022;victime;630;21;20;30000,0
+Vols avec armes;2017;infraction;28;17;17;1647,1
+Vols avec armes;2022;infraction;16;21;20;761,9
+Vols violents sans arme;2017;infraction;173;17;17;10176,5
+Vols violents sans arme;2022;infraction;119;21;20;5666,7
+Vols sans violence contre des personnes;2017;victime entendue;2059;17;17;121117,6
+Vols sans violence contre des personnes;2022;victime entendue;1881;21;20;89571,4
+Cambriolages de logement;2017;infraction;1246;17;17;73294,1
+Cambriolages de logement;2022;infraction;820;21;20;39047,6
+Vols de véhicules;2017;véhicule;638;17;17;37529,4
+Vols de véhicules;2022;véhicule;507;21;20;24142,9
+Vols dans les véhicules;2017;véhicule;751;17;17;44176,5
+Vols dans les véhicules;2022;véhicule;615;21;20;29285,7
+Vols d'accessoires sur véhicules;2017;véhicule;535;17;17;31470,6
+Vols d'accessoires sur véhicules;2022;véhicule;597;21;20;28428,6
+Destructions et dégradations volontaires;2017;infraction;3291;17;17;193588,2
+Destructions et dégradations volontaires;2022;infraction;3193;21;20;152047,6
+Escroqueries;2017;victime;1845;17;17;108529,4
+Escroqueries;2022;victime;2175;21;20;103571,4
+Trafic de stupéfiants;2017;Mis en cause;264;17;17;15529,4
+Trafic de stupéfiants;2022;Mis en cause;211;21;20;10047,6
+Usage de stupéfiants;2017;Mis en cause;1116;17;17;65647,1
+Usage de stupéfiants;2022;Mis en cause;1048;21;20;49904,8

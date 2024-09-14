@@ -8,8 +8,11 @@ Groupe : Juliette, Flavien, Yasmine & Colas
 
 ### 📌 Consignes du projet : 
 
-(à remplir)
+CERTIFICATION PROFESSIONNELLE EXPERT EN INFORMATIQUE ET SYSTEME D’INFORMATION RNCP - RNCP N°35584
 
+BLOC E7.3 – Piloter l’informatique décisionnel d’un S.I (Big Data & Business Intelligence)
+
+Cahier des Charges de la MSPR « Big Data et Analyse de données »
 
 ### 🐱 Notre projet :
 
@@ -18,7 +21,12 @@ Groupe : Juliette, Flavien, Yasmine & Colas
 
 ### 💻 Applications et langages utilisés :
 
-(à remplir)
+- Visual studio code
+
+- KNIME
+
+- PowerBI
+
 
 
 ## 🌸 Merci !
