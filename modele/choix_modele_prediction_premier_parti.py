@@ -18,6 +18,9 @@ from sklearn.linear_model import RidgeCV, LassoCV
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
 
 
 # Préparer les données
@@ -25,8 +28,9 @@ def prepare_data():
     data = pd.read_excel("data/fichier_final.xlsx", decimal=',')
     
     feature_columns = [
-        'premier_parti_encoded', # Variable cible
-        'total_au_chomage','Cadre_et_profession_intellectuelle_supérieure','SUP5_total'
+        'Lutte_ouvrière', # Variable cible
+        'CAPBEP_total','SUP5_total',
+        'pourcentage_abstention', 'Agriculteurs exploitants'
     ]
 
     # Sélectionner les colonnes utiles dans les données
@@ -39,8 +43,8 @@ data = prepare_data()
 # TEST DE PLUSIEURS MODELES POUR TROUVER LE PLUS PREDICTIF
 #---------------------------------------
 # Séparation des données en caractéristiques (X) et cible (y)
-X = data.drop(columns=['premier_parti_encoded'])
-y = data['premier_parti_encoded']
+X = data.drop(columns=['Lutte_ouvrière'])
+y = data['Lutte_ouvrière']
 
 # Standardisation des données
 scaler = StandardScaler()
