@@ -2,7 +2,8 @@
 import pandas as pd
 # Chargement des données
 # Variable cible
-resultats = pd.read_excel("data/resultats_2022_1er_tour.xls")
+resultats_premier_tour = pd.read_excel("data/resultats_2022_1er_tour.xls")
+resultats_second_tour = pd.read_excel("data/resultats_2022_2eme_tour_eure_et_loir.xlsx")
 
 # Variables explicatives
 chomage = pd.read_excel("data/chomage_par_genre_et_age.xlsx")
@@ -16,7 +17,8 @@ age_et_genre = pd.read_excel("data/population_par_age_et_genre.xlsx")
 salaire_moyen = pd.read_excel("data/salaire_horaire_moyen.xlsx")
 taux_abstention = pd.read_excel("data/taux_de_participation.xlsx")
 
-data = pd.merge(resultats, chomage, on=['libelle_commune', 'annee'], how='left')
+data = pd.merge(resultats_premier_tour, chomage, on=['libelle_commune', 'annee'], how='left')
+data = pd.merge(data, resultats_second_tour, on=['libelle_commune', 'annee'], how='left')
 data = pd.merge(data, csp, on=['libelle_commune', 'annee'], how='left')
 data = pd.merge(data, education, on=['libelle_commune', 'annee'], how='left')
 data = pd.merge(data, immigration, on=['libelle_commune', 'annee'], how='left')
