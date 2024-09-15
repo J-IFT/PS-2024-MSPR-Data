@@ -149,5 +149,135 @@ GROUP BY commune.libelle_commune, annee;
 """
 execute_query_to_excel(query_population_genre_age, "population_par_age_genre.xlsx")
 
+
+# Requête 7 : CSP majoritaire
+query_csp_max = """
+SELECT
+    c.libelle_commune,
+    p.annee,
+    cs.nom_CSP AS CSP_majoritaire
+FROM
+    population_par_CSP p
+JOIN
+    (SELECT
+         code_postal,
+         annee,
+         id_CSP,
+         COUNT(*) AS count
+     FROM
+         population_par_CSP
+     GROUP BY
+         code_postal,
+         annee,
+         id_CSP) pc
+ON
+    p.code_postal = pc.code_postal AND p.annee = pc.annee AND p.id_CSP = pc.id_CSP
+JOIN
+    (SELECT
+         code_postal,
+         annee,
+         MAX(count) AS max_count
+     FROM
+         (SELECT
+              code_postal,
+              annee,
+              id_CSP,
+              COUNT(*) AS count
+          FROM
+              population_par_CSP
+          GROUP BY
+              code_postal,
+              annee,
+              id_CSP) AS temp
+     GROUP BY
+         code_postal,
+         annee) mpc
+ON
+    pc.code_postal = mpc.code_postal AND pc.annee = mpc.annee AND pc.count = mpc.max_count
+JOIN
+    categorie_socio_pro cs
+ON
+    pc.id_CSP = cs.id_CSP
+JOIN
+    commune c
+ON
+    p.code_postal = c.code_postal;
+"""
+execute_query_to_excel(query_csp_max, "csp_max.xlsx")
+
+# Requête 8 : diplôme majoritaire
+query_dipl_max = """
+SELECT
+    e.code_postal,
+    e.annee,
+       d.niveau AS diplome_majoritaire
+FROM
+    education e
+JOIN
+    (SELECT
+         code_postal,
+         annee,
+         id_diplome,
+         COUNT(*) AS count
+     FROM
+         education
+     GROUP BY
+         code_postal,
+         annee,
+         id_diplome) dc
+ON
+    e.code_postal = dc.code_postal AND e.annee = dc.annee AND e.id_diplome = dc.id_diplome
+JOIN
+    (SELECT
+         code_postal,
+         annee,
+         MAX(count) AS max_count
+     FROM
+         (SELECT
+              code_postal,
+              annee,
+              id_diplome,
+              COUNT(*) AS count
+          FROM
+              education
+          GROUP BY
+              code_postal,
+              annee,
+              id_diplome) AS temp
+     GROUP BY
+         code_postal,
+         annee) mdc
+ON
+    dc.code_postal = mdc.code_postal AND dc.annee = mdc.annee AND dc.count = mdc.max_count
+JOIN
+    diplome d
+ON
+    dc.id_diplome = d.id_diplome
+JOIN
+    commune c
+ON
+    e.code_postal = c.code_postal;
+"""
+execute_query_to_excel(query_dipl_max, "dipl_max.xlsx")
+
+#Requête 9 : ville par taille 
+query_taille_ville = """
+SELECT 
+    code_postal,
+    nombre_habitants,
+    CASE 
+        WHEN nombre_habitants < 200 THEN 'Hameau'
+        WHEN nombre_habitants >= 200 AND nombre_habitants < 2000 THEN 'Village'
+        WHEN nombre_habitants >= 2000 AND nombre_habitants < 5000 THEN 'Bourg'
+        WHEN nombre_habitants >= 5000 AND nombre_habitants < 100000 THEN 'Petite/Moyenne Ville'
+        WHEN nombre_habitants >= 100000 THEN 'Grande Ville'
+    END AS categorie_ville
+FROM 
+    population
+ORDER BY 
+    nombre_habitants DESC;
+"""
+execute_query_to_excel(query_taille_ville, "taille_ville.xlsx")
+
 # Fermeture de la connexion
 engine.dispose()
