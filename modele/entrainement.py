@@ -1,159 +1,260 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.svm import SVR
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
-from sklearn.feature_selection import RFE
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import RidgeCV, LassoCV
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import learning_curve
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
-# Charger les données
-resultats = pd.read_excel("data/resultats_electoraux.xlsx")
-chomage = pd.read_excel("data/chomage_par_genre_et_age.xlsx")
-csp = pd.read_excel("data/population_par_CSP.xlsx")
-education = pd.read_excel("data/niveau_diplome_par_genre.xlsx")
-insecurite = pd.read_excel("data/sentiment_insecurite.xlsx")
-confiance = pd.read_excel("data/confiance_des_menages.xlsx")
+donnees_cibles_premier_tour = [
+    'Lutte_ouvrière', 
+    'Parti_communiste_français', 
+    'Renaissance', 
+    'Résistons', 
+    'Rassemblement_national', 
+    'Reconquête', 
+    'La_France_Insoumise', 
+    'Le_partie_socialiste', 
+    'Europe_écologie_Les_verts', 
+    'Les_républicains', 
+    'Le_nouveau_parti_anticapitaliste', 
+    'Debout_la_France'
+]
 
 # Préparer les données
-def prepare_data():
-    data = pd.merge(resultats, chomage, on=['libelle_commune', 'annee'], how='left')
-    data = pd.merge(data, csp, on=['libelle_commune', 'annee'], how='left')
-    data = pd.merge(data, education, on=['libelle_commune', 'annee'], how='left')
-    data = pd.merge(data, insecurite, on='annee', how='left')
-    data = pd.merge(data, confiance, on='annee', how='left')
-
+def prepare_data(parti):
+    data = pd.read_excel("data/fichier_final.xlsx", decimal=',')
+    
     feature_columns = [
-        'total_voix_1er_tour', 'total_voix_2e_tour',
-        'total_au_chomage', 'hommes_au_chomage', 'femmes_au_chomage',
-        'hommes_15_24_au_chomage', 'femmes_15_24_au_chomage',
-        'hommes_25_54_au_chomage', 'femmes_25_54_au_chomage',
-        'hommes_55_64_au_chomage', 'femmes_55_64_au_chomage',
-        'CS1', 'CS2', 'CS3', 'CS4', 'CS5', 'CS6',
-        'DIPLMIN_total', 'BEPC_total', 'CAPBEP_total', 'BAC_total',
-        'SUP2_total', 'SUP34_total', 'SUP5_total',
-        'DIPLMIN_hommes', 'BEPC_hommes', 'CAPBEP_hommes', 'BAC_hommes',
-        'SUP2_hommes', 'SUP34_hommes', 'SUP5_hommes',
-        'DIPLMIN_femmes', 'BEPC_femmes', 'CAPBEP_femmes', 'BAC_femmes',
-        'SUP2_femmes', 'SUP34_femmes', 'SUP5_femmes',
-        'sentiment_insecurite_14_29', 'sentiment_insecurite_30_44',
-        'sentiment_insecurite_45_59', 'sentiment_insecurite_60_74',
-        'sentiment_insecurite_75_plus', 'indicateur_synthetique',
-        'indicateur_niveau_de_vie_passe', 'indicateur_niveau_de_vie_evolution',
-        'indicateur_chomage_evolution'
+        parti, # Variable cible
+        'total_au_chomage', 
+        'Agriculteurs exploitants', 'Artisans_commerçants_chefs_d_entreprise', 
+        'Cadre_et_profession_intellectuelle_supérieure', 'Profession_intermédiaire', 'Employe', 'Ouvrier',
+        'DIPLMIN_total', 'CAPBEP_total', 'BAC_total', 'SUP34_total', 'SUP5_total', 'nombre_habitants', 'nombre_immigration',
+        'Médiane_du_niveau_de_vie', 'generation_55_64', 'Salaire_net_horaire_moyen', 'pourcentage_abstention'
     ]
 
-    # Supprimer les colonnes avec uniquement des valeurs manquantes
-    missing_cols = [col for col in feature_columns if data[col].isnull().all()]
-    feature_columns = [col for col in feature_columns if col not in missing_cols]
-    data = data[feature_columns]
-
-    # Gestion des valeurs manquantes
-    imputer = SimpleImputer(strategy='mean')
-    data_imputed = imputer.fit_transform(data)
-    data_clean = pd.DataFrame(data_imputed, columns=feature_columns)
-
-    return data_clean
-
-# Préparer les données
-data = prepare_data()
-
-# Définir les variables explicatives et la variable cible
-X = data.drop(columns=['total_voix_1er_tour', 'total_voix_2e_tour'])
-y = data['total_voix_1er_tour']
-
-# Normalisation des données
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Fonction pour calculer l'accuracy
-def calculate_accuracy(y_true, y_pred, tolerance=0.05):
-    correct_predictions = np.abs(y_true - y_pred) <= tolerance * np.abs(y_true)
-    return np.mean(correct_predictions)
-
-# Sélection des caractéristiques importantes avec RFE et Importance des caractéristiques
-def feature_selection_rfe(X_train, y_train, model, n_features=10):
-    selector = RFE(model, n_features_to_select=n_features)
-    selector = selector.fit(X_train, y_train)
-    return X.columns[selector.support_]
-
-def feature_selection_importance(X_train, y_train, model, threshold=0.05):
-    model.fit(X_train, y_train)
-    importances = model.feature_importances_
-    importance_df = pd.DataFrame({'Feature': X.columns, 'Importance': importances})
-    return importance_df[importance_df['Importance'] > threshold]['Feature'].tolist()
-
-# Test des modèles
-models = {
-    'Régression Linéaire': LinearRegression(),
-    'Régression Ridge': Ridge(),
-    'Régression Lasso': Lasso(),
-    'Arbre de Décision': DecisionTreeRegressor(),
-    'Forêt Aléatoire': RandomForestRegressor(),
-    'Gradient Boosting': GradientBoostingRegressor(),
-    'SVM': SVR(),
-    'k-NN': KNeighborsRegressor()
-}
-
-# Évaluation des caractéristiques avec RFE et Importance des caractéristiques
-selected_features = {}
-for name, model in models.items():
-    if name in ['Régression Linéaire', 'Régression Ridge', 'Régression Lasso', 'Arbre de Décision', 'Forêt Aléatoire', 'Gradient Boosting']:
-        selected_features[name] = feature_selection_rfe(X_scaled, y, model)
-    elif name in ['SVM', 'k-NN']:
-        # Ne pas utiliser la sélection basée sur l'importance pour ces modèles
-        selected_features[name] = X.columns.tolist()
-
-# Affichage des caractéristiques sélectionnées
-for model_name, features in selected_features.items():
-    print(f"Caractéristiques sélectionnées pour {model_name}:")
-    print(features)
-    print()
-
-# Essai avec les caractéristiques sélectionnées
-results = {}
-for name, model in models.items():
-    selected_cols = selected_features.get(name, X.columns)
-    X_selected = pd.DataFrame(X_scaled, columns=X.columns)[selected_cols]
+    # Sélectionner les colonnes utiles dans les données
+    data = data[feature_columns].apply(pd.to_numeric, errors='coerce')
     
-    X_train, X_test, y_train, y_test = train_test_split(X_selected, y, test_size=0.3, random_state=42)
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    return data
+
+final_results = []
+
+# Courbe d'apprentissage
+def plot_learning_curve(model, X, y):
+    train_sizes, train_scores, test_scores = learning_curve(model, X, y, cv=5)
+    plt.figure(figsize=(8, 6))
+    plt.plot(train_sizes, train_scores.mean(axis=1), label='Training score')
+    plt.plot(train_sizes, test_scores.mean(axis=1), label='Cross-validation score')
+    plt.xlabel('Training set size')
+    plt.ylabel('Score')
+    plt.title('Learning Curve')
+    plt.legend()
+    plt.show()
+  
+# Matrice de confusion
+def plot_confusion_matrix(model, X_test, y_test):
+    y_pred = model.predict(X_test)
+    cm = confusion_matrix(y_test, y_pred)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Classe 0', 'Classe 1'], yticklabels=['Classe 0', 'Classe 1'])
+    plt.xlabel('Classe prédite')
+    plt.ylabel('Classe réelle')
+    plt.title('Matrice de Confusion')
+    plt.show()
+
+for index, parti in enumerate(donnees_cibles_premier_tour):
+    data = prepare_data(parti)
+
+    #---------------------------------------
+    # Séparation des données en caractéristiques (X) et cible (y)
+    X = data.drop(columns=[parti])
+    y = data[parti]
+
+    # Standardisation des données
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Séparation des données en ensembles d'entraînement et de test
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+    # Entraînement du modèle Lasso
+    # lasso_model = Lasso(alpha=1)
+    # lasso_model.fit(X_train, y_train)
+
+    # # Prédictions avec le modèle Lasso
+    # y_pred_lasso = lasso_model.predict(X_test)
+
+    # # Évaluation du modèle Lasso
+    # mse_lasso = mean_squared_error(y_test, y_pred_lasso)
+    # r2_lasso = r2_score(y_test, y_pred_lasso)
+    # coefficients = pd.DataFrame({'Variable': X.columns, 'Coefficient': lasso_model.coef_})
+
+    # #Selection des 5 variables les plus explicatives
+    # selected_features = coefficients[coefficients['Coefficient'] != 0]
+    # selected_features['abs_Coefficient'] = selected_features['Coefficient'].abs()
+    # top_features = selected_features.sort_values(by='abs_Coefficient', ascending=False).head(5)
+    # top_features_list = '\n'.join(top_features['Variable'].tolist())
+
+    # print("Top 5 variables sélectionnées par le modèle Lasso :")
+    # print(top_features[['Variable', 'Coefficient']])
+
+    # Entraînement du modèle Gradient Boosting
+    # gb_model = GradientBoostingRegressor(random_state=42)
+    # gb_model.fit(X_train, y_train)
+
+    # # Prédictions avec le modèle Gradient Boosting
+    # y_pred_gb = gb_model.predict(X_test)
+
+    # # Évaluation du modèle Gradient Boosting
+    # mse_gb = mean_squared_error(y_test, y_pred_gb)
+    # r2_gb = r2_score(y_test, y_pred_gb)
+
+    # # Extraction des importances des features
+    # importances = gb_model.feature_importances_
+    # importance_df = pd.DataFrame({'Variable': X.columns, 'Importance': importances})
     
-    model.fit(X_train_scaled, y_train)
-    y_pred_train = model.predict(X_train_scaled)
-    y_pred_test = model.predict(X_test_scaled)
+    # Entraînement du modèle Random Forest
+    rf_model = RandomForestRegressor(random_state=42, n_estimators=100)  # Vous pouvez ajuster n_estimators selon vos besoins
+    rf_model.fit(X_train, y_train)
+
+    # Prédictions avec le modèle Random Forest
+    y_pred_rf = rf_model.predict(X_test)
+
+    # Évaluation du modèle Random Forest
+    mse_rf = mean_squared_error(y_test, y_pred_rf)
+    r2_rf = r2_score(y_test, y_pred_rf)
     
-    train_mse = mean_squared_error(y_train, y_pred_train)
-    train_r2 = r2_score(y_train, y_pred_train)
-    test_mse = mean_squared_error(y_test, y_pred_test)
-    test_r2 = r2_score(y_test, y_pred_test)
-    accuracy = calculate_accuracy(y_test, y_pred_test)
+    # Extraction des importances des features
+    importances = rf_model.feature_importances_
+    importance_df = pd.DataFrame({'Variable': X.columns, 'Importance': importances})
     
-    results[name] = {
-        'Train Mean Squared Error': train_mse,
-        'Train R2 Score': train_r2,
-        'Test Mean Squared Error': test_mse,
-        'Test R2 Score': test_r2,
-        'Test Accuracy': accuracy
+    # Sélection des 5 variables les plus explicatives
+    top_features = importance_df.sort_values(by='Importance', ascending=False).head(5)
+    top_features_list = '\n'.join(top_features['Variable'].tolist())
+
+    def prepare_data_with_selected_features(parti, importance_df):
+        data = pd.read_excel("data/fichier_final.xlsx", decimal=',')
+        feature_columns = list(importance_df['Variable']) + [parti]
+        data = data[feature_columns].apply(pd.to_numeric, errors='coerce')
+        
+        return data
+
+    data = prepare_data_with_selected_features(parti, importance_df)
+    
+    X = data.drop(columns=[parti])
+    X_scaled = scaler.fit_transform(X)
+
+    # Séparation des données en ensembles d'entraînement et de test
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+    # Dictionnaire pour stocker les résultats des modèles
+    model_results = {}
+
+    # Entraînement du modèle Ridge avec validation croisée
+    ridge_model = RidgeCV(cv=5).fit(X_train, y_train)
+    y_pred_ridge = ridge_model.predict(X_test)
+    mse_ridge = mean_squared_error(y_test, y_pred_ridge)
+    r2_ridge = r2_score(y_test, y_pred_ridge)
+    model_results['Ridge'] = {'mse': mse_ridge, 'r2': r2_ridge}
+
+    # Entraînement du modèle Lasso avec validation croisée
+    lasso_model = LassoCV(cv=5, random_state=42).fit(X_train, y_train)
+    y_pred_lasso = lasso_model.predict(X_test)
+    mse_lasso = mean_squared_error(y_test, y_pred_lasso)
+    r2_lasso = r2_score(y_test, y_pred_lasso)
+    model_results['Lasso'] = {'mse': mse_lasso, 'r2': r2_lasso}
+
+    # Entraînement du modèle Random Forest avec GridSearchCV
+    param_grid_rf = {
+        'n_estimators': [100, 200],
+        'max_depth': [None, 10, 20],
+        'min_samples_split': [2, 5, 10]
     }
+    rf_model = GridSearchCV(RandomForestRegressor(random_state=42), param_grid_rf, cv=5).fit(X_train, y_train)
+    y_pred_rf = rf_model.predict(X_test)
+    mse_rf = mean_squared_error(y_test, y_pred_rf)
+    r2_rf = r2_score(y_test, y_pred_rf)
+    model_results['Random Forest'] = {'mse': mse_rf, 'r2': r2_rf}
 
-# Affichage des résultats
-results_df = pd.DataFrame(results).T
-print("Résultats des différents modèles :")
-print(results_df)
+    # Entraînement du modèle Gradient Boosting avec GridSearchCV
+    param_grid_gb = {
+        'n_estimators': [100, 200],
+        'learning_rate': [0.01, 0.1],
+        'max_depth': [3, 5]
+    }
+    gb_model = GridSearchCV(GradientBoostingRegressor(random_state=42), param_grid_gb, cv=5).fit(X_train, y_train)
+    y_pred_gb = gb_model.predict(X_test)
+    mse_gb = mean_squared_error(y_test, y_pred_gb)
+    r2_gb = r2_score(y_test, y_pred_gb)
+    model_results['Gradient Boosting'] = {'mse': mse_gb, 'r2': r2_gb}
 
-# Sauvegarde des résultats dans un fichier Excel
-results_df.to_excel('resultats_modeles_avec_selection.xlsx')
+    # Sélection du meilleur modèle basé sur le r² le plus élevé et le MSE le plus faible
+    best_model = max(model_results.items(), key=lambda x: (x[1]['r2'], -x[1]['mse']))
+    
+    best_model_instance = None
+    if best_model[0] == 'Gradient Boosting':
+        best_model_instance = gb_model
+    elif best_model[0] == 'Random Forest':
+        best_model_instance = rf_model
+    elif best_model[0] == 'Lasso':
+        best_model_instance = lasso_model
+    elif best_model[0] == 'Ridge':
+        best_model_instance = ridge_model
 
-# Visualisation des résultats (optionnel)
-results_df[['Test Mean Squared Error', 'Test R2 Score']].plot(kind='bar', figsize=(12, 6))
-plt.title('Performance des Modèles')
-plt.ylabel('Score')
-plt.xlabel('Modèles')
-plt.show()
+    # Prédiction du nombre de votes pour ce parti
+    y_pred = best_model_instance.predict(X_test)
+    
+    # Calcul de la moyenne des prédictions
+    avg_prediction = np.mean(y_pred)
+
+    # Courbe d'apprentissage
+    # plot_learning_curve(gb_model, X, y)
+    # Matrice de confusion
+    plot_confusion_matrix(gb_model, y_test, y_pred)
+    
+    # Ajouter les résultats dans le tableau final
+    final_results.append({
+        'Parti': parti,
+        'Variables Explicatives': top_features_list,  # Conversion de la liste en string avec retour à la ligne
+        'MSE et R²': f"MSE: {best_model[1]['mse']:.4f}, R²: {best_model[1]['r2']:.4f}",
+        'Modèle Retenu': best_model[0],
+        'Prédiction du nombre de votes': f"{avg_prediction:.2f}"
+    })
+    
+final_df = pd.DataFrame(final_results)
+
+# # Afficher le tableau avec matplotlib
+# fig, ax = plt.subplots(figsize=(10, 5))  
+# ax.axis('tight')
+# ax.axis('off')
+
+# # Créer une table avec matplotlib
+# table = ax.table(cellText=final_df.values, colLabels=final_df.columns, cellLoc='center', loc='center')
+
+# table.auto_set_font_size(False)
+# table.set_fontsize(6)
+# table.scale(1.2, 2)  
+
+# # Coloration des colonnes (optionnel)
+# colors = ['#f0f0f0', '#d0e0e3']
+# for i, key in enumerate(final_df.columns):
+#     table[0, i].set_facecolor('#4CAF50')  
+#     table[0, i].set_text_props(color='white', weight='bold') 
+#     for j in range(1, len(final_df) + 1):
+#         table[j, i].set_facecolor(colors[j % 2]) 
+
+# # Ajuster la largeur des colonnes pour qu'elles s'adaptent à la taille du texte
+# for i in range(len(final_df.columns)):
+#     table.auto_set_column_width(i)
+
+# plt.show()
