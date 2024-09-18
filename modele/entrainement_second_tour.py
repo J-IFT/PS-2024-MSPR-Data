@@ -104,7 +104,7 @@ for index, parti in enumerate(donnees_cibles_second_tour):
     # importance_df = pd.DataFrame({'Variable': X.columns, 'Importance': importances})
     
     # Entraînement du modèle Random Forest
-    rf_model = RandomForestRegressor(random_state=42, n_estimators=100)  # Vous pouvez ajuster n_estimators selon vos besoins
+    rf_model = RandomForestRegressor(random_state=42, n_estimators=100)
     rf_model.fit(X_train, y_train)
 
     # Prédictions avec le modèle Random Forest
@@ -215,7 +215,6 @@ table.auto_set_font_size(False)
 table.set_fontsize(10)
 table.scale(1.2, 6)  
 
-# Coloration des colonnes (optionnel)
 colors = ['#f0f0f0', '#d0e0e3']
 for i, key in enumerate(final_df.columns):
     table[0, i].set_facecolor('#4CAF50')  
@@ -223,7 +222,6 @@ for i, key in enumerate(final_df.columns):
     for j in range(1, len(final_df) + 1):
         table[j, i].set_facecolor(colors[j % 2]) 
 
-# Ajuster la largeur des colonnes pour qu'elles s'adaptent à la taille du texte
 for i in range(len(final_df.columns)):
     table.auto_set_column_width(i)
 
