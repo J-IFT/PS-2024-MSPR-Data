@@ -23,10 +23,8 @@ colonnes = [
 ]
 
 # Nombre de lignes à générer
-n_lignes = 10  # Vous pouvez ajuster ce nombre
-
-# Générer des données aléatoires
-np.random.seed(42)  # Pour reproductibilité
+n_lignes = 10  
+np.random.seed(42)
 data = pd.DataFrame(np.random.randn(n_lignes, len(colonnes)), columns=colonnes)
 
 # Ajouter des valeurs positives et des ajustements pour certaines colonnes
@@ -41,14 +39,12 @@ data['hommes_55_64_au_chomage'] = np.random.randint(100, 500, size=n_lignes)
 data['femmes_55_64_au_chomage'] = np.random.randint(100, 500, size=n_lignes)
 
 # Simuler des valeurs pour les autres colonnes (en général)
-data = data.abs()  # Assurer que toutes les valeurs sont positives
+data = data.abs() 
 
-# Assurer le répertoire cible existe
+
 output_dir = "data"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
-
-# Sauvegarder les données dans un fichier Excel
 file_path = os.path.join(output_dir, "donnees-fictives-pour-analyse.xlsx")
 data.to_excel(file_path, index=False)
 
