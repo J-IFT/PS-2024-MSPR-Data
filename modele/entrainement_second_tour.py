@@ -10,23 +10,21 @@ from sklearn.linear_model import RidgeCV, LassoCV
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.model_selection import learning_curve
-from sklearn.metrics import confusion_matrix
-import seaborn as sns
 
-donnees_cibles_premier_tour = [
-    'Lutte_ouvrière', 
-    'Parti_communiste_français', 
-    'Renaissance', 
-    'Résistons', 
-    'Rassemblement_national', 
-    'Reconquête', 
-    'La_France_Insoumise', 
-    'Le_partie_socialiste', 
-    'Europe_écologie_Les_verts', 
-    'Les_républicains', 
-    'Le_nouveau_parti_anticapitaliste', 
-    'Debout_la_France'
+#------------------------------------------------------------------------------------------------------------
+#PREDICTIONS POUR LE SECOND TOUR
+# print(final_df)
+# final_df['Prédiction du nombre de votes'] = final_df['Prédiction du nombre de votes'].astype(float)
+# final_df_sorted = final_df.sort_values(by='Prédiction du nombre de votes', ascending=False)
+# donnees_cibles_second_tour = final_df_sorted.head(2)['Parti']
+# print(donnees_cibles_second_tour)
+# donnees_cibles_second_tour = donnees_cibles_second_tour + '_second_tour'
+
+# final_results = []
+
+donnees_cibles_second_tour = [
+    'Renaissance_second_tour', 
+    'Rassemblement_national_second_tour'
 ]
 
 # Préparer les données
@@ -35,7 +33,11 @@ def prepare_data(parti):
     
     feature_columns = [
         parti, # Variable cible
-        'total_au_chomage', 
+        'total_au_chomage', 'Lutte_ouvrière', 
+        'Parti_communiste_français', 'Renaissance', 'Résistons', 
+        'Rassemblement_national', 'Reconquête', 'La_France_Insoumise', 
+        'Le_partie_socialiste', 'Europe_écologie_Les_verts', 
+        'Les_républicains', 'Le_nouveau_parti_anticapitaliste', 'Debout_la_France',
         'Agriculteurs exploitants', 'Artisans_commerçants_chefs_d_entreprise', 
         'Cadre_et_profession_intellectuelle_supérieure', 'Profession_intermédiaire', 'Employe', 'Ouvrier',
         'DIPLMIN_total', 'CAPBEP_total', 'BAC_total', 'SUP34_total', 'SUP5_total', 'nombre_habitants', 'nombre_immigration',
@@ -49,30 +51,8 @@ def prepare_data(parti):
 
 final_results = []
 
-# Courbe d'apprentissage
-def plot_learning_curve(model, X, y):
-    train_sizes, train_scores, test_scores = learning_curve(model, X, y, cv=5)
-    plt.figure(figsize=(8, 6))
-    plt.plot(train_sizes, train_scores.mean(axis=1), label='Training score')
-    plt.plot(train_sizes, test_scores.mean(axis=1), label='Cross-validation score')
-    plt.xlabel('Training set size')
-    plt.ylabel('Score')
-    plt.title('Learning Curve')
-    plt.legend()
-    plt.show()
-  
-# Matrice de confusion
-def plot_confusion_matrix(model, X_test, y_test):
-    y_pred = model.predict(X_test)
-    cm = confusion_matrix(y_test, y_pred)
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Classe 0', 'Classe 1'], yticklabels=['Classe 0', 'Classe 1'])
-    plt.xlabel('Classe prédite')
-    plt.ylabel('Classe réelle')
-    plt.title('Matrice de Confusion')
-    plt.show()
 
-for index, parti in enumerate(donnees_cibles_premier_tour):
+for index, parti in enumerate(donnees_cibles_second_tour):
     data = prepare_data(parti)
 
     #---------------------------------------
@@ -129,27 +109,23 @@ for index, parti in enumerate(donnees_cibles_premier_tour):
 
     # Prédictions avec le modèle Random Forest
     y_pred_rf = rf_model.predict(X_test)
-
-    # Évaluation du modèle Random Forest
-    mse_rf = mean_squared_error(y_test, y_pred_rf)
-    r2_rf = r2_score(y_test, y_pred_rf)
     
     # Extraction des importances des features
     importances = rf_model.feature_importances_
     importance_df = pd.DataFrame({'Variable': X.columns, 'Importance': importances})
-    
+
     # Sélection des 5 variables les plus explicatives
     top_features = importance_df.sort_values(by='Importance', ascending=False).head(5)
     top_features_list = '\n'.join(top_features['Variable'].tolist())
 
-    def prepare_data_with_selected_features(parti, importance_df):
+    def prepare_data_with_selected_features(parti, top_features):
         data = pd.read_excel("data/fichier_final.xlsx", decimal=',')
-        feature_columns = list(importance_df['Variable']) + [parti]
+        feature_columns = list(top_features['Variable']) + [parti]
         data = data[feature_columns].apply(pd.to_numeric, errors='coerce')
         
         return data
 
-    data = prepare_data_with_selected_features(parti, importance_df)
+    data = prepare_data_with_selected_features(parti, top_features)
     
     X = data.drop(columns=[parti])
     X_scaled = scaler.fit_transform(X)
@@ -217,15 +193,9 @@ for index, parti in enumerate(donnees_cibles_premier_tour):
     # Calcul de la moyenne des prédictions
     avg_prediction = np.mean(y_pred)
 
-    # Courbe d'apprentissage
-    # plot_learning_curve(gb_model, X, y)
-    # Matrice de confusion
-    plot_confusion_matrix(gb_model, y_test, y_pred)
-    
-    # Ajouter les résultats dans le tableau final
     final_results.append({
         'Parti': parti,
-        'Variables Explicatives': top_features_list,  # Conversion de la liste en string avec retour à la ligne
+        'Variables Explicatives': top_features_list,  
         'MSE et R²': f"MSE: {best_model[1]['mse']:.4f}, R²: {best_model[1]['r2']:.4f}",
         'Modèle Retenu': best_model[0],
         'Prédiction du nombre de votes': f"{avg_prediction:.2f}"
@@ -233,28 +203,28 @@ for index, parti in enumerate(donnees_cibles_premier_tour):
     
 final_df = pd.DataFrame(final_results)
 
-# # Afficher le tableau avec matplotlib
-# fig, ax = plt.subplots(figsize=(10, 5))  
-# ax.axis('tight')
-# ax.axis('off')
+# Afficher le tableau avec matplotlib
+fig, ax = plt.subplots(figsize=(12, 8))  
+ax.axis('tight')
+ax.axis('off')
 
-# # Créer une table avec matplotlib
-# table = ax.table(cellText=final_df.values, colLabels=final_df.columns, cellLoc='center', loc='center')
+# Créer une table avec matplotlib
+table = ax.table(cellText=final_df.values, colLabels=final_df.columns, cellLoc='center', loc='center')
 
-# table.auto_set_font_size(False)
-# table.set_fontsize(6)
-# table.scale(1.2, 2)  
+table.auto_set_font_size(False)
+table.set_fontsize(10)
+table.scale(1.2, 6)  
 
-# # Coloration des colonnes (optionnel)
-# colors = ['#f0f0f0', '#d0e0e3']
-# for i, key in enumerate(final_df.columns):
-#     table[0, i].set_facecolor('#4CAF50')  
-#     table[0, i].set_text_props(color='white', weight='bold') 
-#     for j in range(1, len(final_df) + 1):
-#         table[j, i].set_facecolor(colors[j % 2]) 
+# Coloration des colonnes (optionnel)
+colors = ['#f0f0f0', '#d0e0e3']
+for i, key in enumerate(final_df.columns):
+    table[0, i].set_facecolor('#4CAF50')  
+    table[0, i].set_text_props(color='white', weight='bold') 
+    for j in range(1, len(final_df) + 1):
+        table[j, i].set_facecolor(colors[j % 2]) 
 
-# # Ajuster la largeur des colonnes pour qu'elles s'adaptent à la taille du texte
-# for i in range(len(final_df.columns)):
-#     table.auto_set_column_width(i)
+# Ajuster la largeur des colonnes pour qu'elles s'adaptent à la taille du texte
+for i in range(len(final_df.columns)):
+    table.auto_set_column_width(i)
 
-# plt.show()
+plt.show()
