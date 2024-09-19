@@ -13,6 +13,7 @@ import numpy as np
 from sklearn.model_selection import learning_curve
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
+from sklearn.metrics import accuracy_score
 
 donnees_cibles_premier_tour = [
     'Lutte_ouvrière', 
@@ -38,7 +39,8 @@ def prepare_data(parti):
         'total_au_chomage', 
         'Agriculteurs exploitants', 'Artisans_commerçants_chefs_d_entreprise', 
         'Cadre_et_profession_intellectuelle_supérieure', 'Profession_intermédiaire', 'Employe', 'Ouvrier',
-        'DIPLMIN_total', 'CAPBEP_total', 'BAC_total', 'SUP34_total', 'SUP5_total', 'nombre_habitants', 'nombre_immigration',
+        'DIPLMIN_total', 'CAPBEP_total', 'BAC_total', 'SUP34_total', 'SUP5_total', 'nombre_habitants', 
+        'nombre_immigration',
         'Médiane_du_niveau_de_vie', 'generation_55_64', 'Salaire_net_horaire_moyen', 'pourcentage_abstention'
     ]
 
@@ -62,29 +64,26 @@ def plot_learning_curve(model, X, y):
     plt.show()
   
 # Matrice de confusion
-def plot_confusion_matrix(model, X_test, y_test):
-    y_pred = model.predict(X_test)
-    cm = confusion_matrix(y_test, y_pred)
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Classe 0', 'Classe 1'], yticklabels=['Classe 0', 'Classe 1'])
-    plt.xlabel('Classe prédite')
-    plt.ylabel('Classe réelle')
-    plt.title('Matrice de Confusion')
-    plt.show()
+# def plot_confusion_matrix(model, X_test, y_test):
+#     y_pred = model.predict(X_test)
+#     cm = confusion_matrix(y_test, y_pred)
+#     plt.figure(figsize=(8, 6))
+#     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Classe 0', 'Classe 1'], yticklabels=['Classe 0', 'Classe 1'])
+#     plt.xlabel('Classe prédite')
+#     plt.ylabel('Classe réelle')
+#     plt.title('Matrice de Confusion')
+#     plt.show()
 
 for index, parti in enumerate(donnees_cibles_premier_tour):
     data = prepare_data(parti)
 
     #---------------------------------------
-    # Séparation des données en caractéristiques (X) et cible (y)
     X = data.drop(columns=[parti])
     y = data[parti]
 
     # Standardisation des données
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-
-    # Séparation des données en ensembles d'entraînement et de test
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
     # Entraînement du modèle Lasso
@@ -109,34 +108,32 @@ for index, parti in enumerate(donnees_cibles_premier_tour):
     # print(top_features[['Variable', 'Coefficient']])
 
     # Entraînement du modèle Gradient Boosting
-    # gb_model = GradientBoostingRegressor(random_state=42)
-    # gb_model.fit(X_train, y_train)
-
-    # # Prédictions avec le modèle Gradient Boosting
-    # y_pred_gb = gb_model.predict(X_test)
+    gb_model = GradientBoostingRegressor(random_state=42)
+    gb_model.fit(X_train, y_train)
+    y_pred_gb = gb_model.predict(X_test)
 
     # # Évaluation du modèle Gradient Boosting
     # mse_gb = mean_squared_error(y_test, y_pred_gb)
     # r2_gb = r2_score(y_test, y_pred_gb)
 
-    # # Extraction des importances des features
-    # importances = gb_model.feature_importances_
-    # importance_df = pd.DataFrame({'Variable': X.columns, 'Importance': importances})
+    # Extraction des importances des features
+    importances = gb_model.feature_importances_
+    importance_df = pd.DataFrame({'Variable': X.columns, 'Importance': importances})
     
     # Entraînement du modèle Random Forest
-    rf_model = RandomForestRegressor(random_state=42, n_estimators=100)  # Vous pouvez ajuster n_estimators selon vos besoins
-    rf_model.fit(X_train, y_train)
+    # rf_model = RandomForestRegressor(random_state=42, n_estimators=100)  # Vous pouvez ajuster n_estimators selon vos besoins
+    # rf_model.fit(X_train, y_train)
 
-    # Prédictions avec le modèle Random Forest
-    y_pred_rf = rf_model.predict(X_test)
+    # # Prédictions avec le modèle Random Forest
+    # y_pred_rf = rf_model.predict(X_test)
 
-    # Évaluation du modèle Random Forest
-    mse_rf = mean_squared_error(y_test, y_pred_rf)
-    r2_rf = r2_score(y_test, y_pred_rf)
+    # # Évaluation du modèle Random Forest
+    # mse_rf = mean_squared_error(y_test, y_pred_rf)
+    # r2_rf = r2_score(y_test, y_pred_rf)
     
-    # Extraction des importances des features
-    importances = rf_model.feature_importances_
-    importance_df = pd.DataFrame({'Variable': X.columns, 'Importance': importances})
+    # # Extraction des importances des features
+    # importances = rf_model.feature_importances_
+    # importance_df = pd.DataFrame({'Variable': X.columns, 'Importance': importances})
     
     # Sélection des 5 variables les plus explicatives
     top_features = importance_df.sort_values(by='Importance', ascending=False).head(5)
@@ -153,8 +150,6 @@ for index, parti in enumerate(donnees_cibles_premier_tour):
     
     X = data.drop(columns=[parti])
     X_scaled = scaler.fit_transform(X)
-
-    # Séparation des données en ensembles d'entraînement et de test
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
     # Dictionnaire pour stocker les résultats des modèles
@@ -198,10 +193,8 @@ for index, parti in enumerate(donnees_cibles_premier_tour):
     r2_gb = r2_score(y_test, y_pred_gb)
     model_results['Gradient Boosting'] = {'mse': mse_gb, 'r2': r2_gb}
 
-    # Sélection du meilleur modèle basé sur le r² le plus élevé et le MSE le plus faible
     best_model = max(model_results.items(), key=lambda x: (x[1]['r2'], -x[1]['mse']))
     
-    best_model_instance = None
     if best_model[0] == 'Gradient Boosting':
         best_model_instance = gb_model
     elif best_model[0] == 'Random Forest':
@@ -212,7 +205,8 @@ for index, parti in enumerate(donnees_cibles_premier_tour):
         best_model_instance = ridge_model
 
     # Prédiction du nombre de votes pour ce parti
-    y_pred = best_model_instance.predict(X_test)
+    y_pred = gb_model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
     
     # Calcul de la moyenne des prédictions
     avg_prediction = np.mean(y_pred)
@@ -220,32 +214,29 @@ for index, parti in enumerate(donnees_cibles_premier_tour):
     # Courbe d'apprentissage
     # plot_learning_curve(gb_model, X, y)
     # Matrice de confusion
-    plot_confusion_matrix(gb_model, y_test, y_pred)
+    # plot_confusion_matrix(gb_model, y_test, y_pred)
     
-    # Ajouter les résultats dans le tableau final
     final_results.append({
         'Parti': parti,
-        'Variables Explicatives': top_features_list,  # Conversion de la liste en string avec retour à la ligne
+        'Variables Explicatives': top_features_list,  
         'MSE et R²': f"MSE: {best_model[1]['mse']:.4f}, R²: {best_model[1]['r2']:.4f}",
         'Modèle Retenu': best_model[0],
-        'Prédiction du nombre de votes': f"{avg_prediction:.2f}"
+        'Prédiction du nombre de votes': f"{avg_prediction:.2f}",
+        'Accuracy': f"{accuracy:.4f}",
     })
     
-final_df = pd.DataFrame(final_results)
+# final_df = pd.DataFrame(final_results)
 
-# # Afficher le tableau avec matplotlib
 # fig, ax = plt.subplots(figsize=(10, 5))  
 # ax.axis('tight')
 # ax.axis('off')
 
-# # Créer une table avec matplotlib
 # table = ax.table(cellText=final_df.values, colLabels=final_df.columns, cellLoc='center', loc='center')
 
 # table.auto_set_font_size(False)
 # table.set_fontsize(6)
 # table.scale(1.2, 2)  
 
-# # Coloration des colonnes (optionnel)
 # colors = ['#f0f0f0', '#d0e0e3']
 # for i, key in enumerate(final_df.columns):
 #     table[0, i].set_facecolor('#4CAF50')  
@@ -253,7 +244,6 @@ final_df = pd.DataFrame(final_results)
 #     for j in range(1, len(final_df) + 1):
 #         table[j, i].set_facecolor(colors[j % 2]) 
 
-# # Ajuster la largeur des colonnes pour qu'elles s'adaptent à la taille du texte
 # for i in range(len(final_df.columns)):
 #     table.auto_set_column_width(i)
 
